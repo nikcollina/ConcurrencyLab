@@ -1,0 +1,100 @@
+#include "driver.h"
+
+driver_t* driver_create(size_t size){
+  driver_t* driver = (driver_t*) malloc(sizeof(driver_t));
+  driver->queue = queue_create(size);
+  driver->empty = sem_init(&driver->empty, 0, queue_capacity(driver->queue));
+  driver->full = sem_init(&driver->full, 0, 0);
+  driver->mutex = sem_init(&driver->mutex, 0, 1);
+  return driver;
+}
+
+enum driver_status driver_schedule(driver_t *driver, void* job) {
+	/* IMPLEMENT THIS */
+  enum queue_status status;
+  
+  
+  /*if (queue_current_size(driver->queue) < queue_capacity(driver->queue)) {
+    status = queue_add(driver->queue, job);
+  }
+  else if (1){
+    // wait if queue is full
+  }
+  else {
+    // general error
+  }*/
+  
+  
+  sem_wait(&empty);
+  sem_wait(&mutex);
+  /////////////////////////////////////////////////////////////////////////////
+  status = queue_add(driver->queue, job);
+  /////////////////////////////////////////////////////////////////////////////
+  sem_post(&mutex);
+  sem_post(&full);
+  
+  return status;
+}
+
+enum driver_status driver_handle(driver_t *driver, void **job) {
+	/* IMPLEMENT THIS */
+  // remove job from queue if one exists
+  // if not wait
+  enum queue_status status;
+  
+  
+  /*if (queue_current_size(driver->queue) > 0 ) {
+    status = queue_remove(driver->queue, job);
+    return status;
+  }
+  else {
+    //wait
+  }*/
+  
+  
+  sem_wait(&full);
+  sem_wait(&mutex);
+  /////////////////////////////////////////////////////////////////////////////
+  status = queue_remove(driver->queue, job);
+  /////////////////////////////////////////////////////////////////////////////
+  sem_post(&mutex);
+  sem_post(&empty);
+  
+  return status;
+}
+
+enum driver_status driver_non_blocking_schedule(driver_t *driver, void* job) {
+	/* IMPLEMENT THIS */
+  // same as blocking without wait
+  enum queue_status status;
+  status = queue_add(driver->queue, job);
+  return status;
+}
+
+enum driver_status driver_non_blocking_handle(driver_t *driver, void **job) {
+	/* IMPLEMENT THIS */
+  // same as blocking without wait
+  enum queue_status status;
+  status = queue_remove(driver->queue, job);
+  return status;
+}
+
+enum driver_status driver_close(driver_t *driver) {
+	/* IMPLEMENT THIS */
+  enum queue_status status;
+  status = -1;
+  return status;
+}
+
+enum driver_status driver_destroy(driver_t *driver) {
+  queue_free(driver->queue);
+  free(driver);
+  return 1;
+}
+
+enum driver_status driver_select(select_t *driver_list, size_t driver_count, size_t* selected_index) {
+	/* IMPLEMENT THIS */
+  enum queue_status status;
+  status = -1;
+  return status;
+}
